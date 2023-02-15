@@ -14,8 +14,36 @@ export class EventEmitter extends EventTarget {
     }
 
     public on<T = typeof CustomEvent>(
-        event: CustomEventConstructor<T>, 
+        event: CustomEventConstructor<T>,
         callback: (e: EventArgument<T>) => void
+    ) {
+
+        this.#on(event, callback);
+
+    }
+
+    public once<T = typeof CustomEvent>(
+        event: CustomEventConstructor<T>,
+        callback: (e: EventArgument<T>) => void,
+    ) {
+
+        this.#on(event, callback, true);
+    }
+
+    public removeAllListeners() {
+        for (const eventType in this.listeners) {
+            const listeners = this.listeners[eventType];
+
+            listeners.forEach(l => {
+                this.removeEventListener(eventType, l as EventListenerOrEventListenerObject)
+            })
+        }
+    }
+
+    #on<T = typeof CustomEvent>(
+        event: CustomEventConstructor<T>,
+        callback: (e: EventArgument<T>) => void,
+        once: boolean = false
     ) {
 
         const cb = (e: Event) => {
@@ -27,18 +55,8 @@ export class EventEmitter extends EventTarget {
             
         this.listeners[event.name].push(cb);
         
-        this.addEventListener(event.name, cb);
+        this.addEventListener(event.name, cb, { once });
 
-    }
-
-    public removeAllListeners() {
-        for (const eventType in this.listeners) {
-            const listeners = this.listeners[eventType];
-
-            listeners.forEach(l => {
-                this.removeEventListener(eventType, l as EventListenerOrEventListenerObject)
-            })
-        }
     }
 
 }
